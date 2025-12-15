@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Free Online Metronome with Swing</title>
+<meta name="description" content="Free online metronome with swing and shuffle, multiple time signatures, note values, and sound selection." />
+<link rel="alternate" hreflang="en" href="/en/online-metronome" />
+<link rel="alternate" hreflang="zh" href="/zh/节拍器" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e11;--card:#1a1a1f;--primary:#6cf2c2;--text:#fff;--sub:#9aa0a6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,#0e0e11,#141418);color:var(--text)}
+header{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222}
+main{max-width:480px;margin:40px auto;padding:24px;background:var(--card);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.bpm{text-align:center}
+.bpm-value{font-size:72px;font-weight:700;color:var(--primary)}
+.bpm-label{color:var(--sub)}
+input[type=range]{width:100%;margin:16px 0}
+.selectors{display:flex;gap:10px;margin-top:10px}
+select{flex:1;padding:10px;border-radius:10px;background:#111;color:#fff;border:1px solid #333}
+.controls{text-align:center;margin-top:20px}
+button{background:var(--primary);border:none;color:#000;padding:14px 32px;border-radius:999px;font-weight:600;cursor:pointer}
+.pulse{width:14px;height:14px;background:var(--primary);border-radius:50%;margin:20px auto 0;opacity:.2}
+.ad{max-width:760px;margin:40px auto;padding:16px;background:#111;border-radius:14px;text-align:center;color:#666;font-size:13px}
+.lang{text-decoration:none;color:#999;font-size:13px;margin-left:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Free Online Metronome</h1>
+  <div>
+    <a class="lang" href="/en/online-metronome">EN</a>
+    <a class="lang" href="/zh/节拍器">中文</a>
+  </div>
+</header>
+
+<!-- Ad Slot 1 -->
+<div class="ad">Google AdSense – Top Ad</div>
+
+<main>
+  <div class="bpm">
+    <div class="bpm-label">TEMPO (BPM)</div>
+    <div class="bpm-value" id="bpmValue">120</div>
+    <input type="range" min="30" max="300" value="120" id="bpmSlider" />
+  </div>
+
+  <div class="selectors">
+    <select id="timeSig">
+      <option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option>
+      <option value="5">5/4</option><option value="6">6/8</option><option value="7">7/8</option>
+    </select>
+    <select id="noteValue">
+      <option value="1">Quarter</option><option value="0.5">Eighth</option><option value="0.25">Sixteenth</option>
+    </select>
+  </div>
+
+  <div class="selectors">
+    <select id="swing">
+      <option value="0">Straight</option><option value="0.6">Swing</option><option value="0.66">Shuffle</option>
+    </select>
+    <select id="soundType">
+      <option value="click">Digital</option><option value="wood">Wood</option><option value="beep">Beep</option>
+    </select>
+  </div>
+
+  <div class="controls"><button id="toggle">Start</button></div>
+  <div class="pulse" id="pulse"></div>
+</main>
+
+<section style="max-width:760px;margin:60px auto 0;padding:0 24px;line-height:1.7;color:#ccc">
+  <h2>Free Online Metronome</h2>
+  <p>This free online metronome provides accurate timing with swing and shuffle support. It works directly in your browser and is suitable for all musicians.</p>
+</section>
+
+<!-- Ad Slot 2 -->
+<div class="ad">Google AdSense – Content Ad</div>
+
+<script>
+const slider=document.getElementById('bpmSlider');
+const bpmValue=document.getElementById('bpmValue');
+const toggleBtn=document.getElementById('toggle');
+const pulse=document.getElementById('pulse');
+const timeSig=document.getElementById('timeSig');
+const noteValue=document.getElementById('noteValue');
+const swingSel=document.getElementById('swing');
+const soundType=document.getElementById('soundType');
+let ctx=new(window.AudioContext||window.webkitAudioContext)();
+let timer=null,running=false,tickCount=0;
+slider.oninput=()=>{bpmValue.textContent=slider.value;if(running)restart();};
+timeSig.onchange=noteValue.onchange=swingSel.onchange=()=>{if(running)restart();};
+function subdivision(){const v=parseFloat(noteValue.value);return v===1?1:v===0.5?2:4;}
+function clickSound(accent){const o=ctx.createOscillator(),g=ctx.createGain();if(soundType.value==='wood'){o.type='square';o.frequency.value=accent?900:600;g.gain.value=.3;}else if(soundType.value==='beep'){o.type='sine';o.frequency.value=accent?1500:1000;g.gain.value=.2;}else{o.type='triangle';o.frequency.value=accent?1800:1200;g.gain.value=.25;}o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.04);} 
+function schedule(){const bpm=parseFloat(slider.value),beats=parseInt(timeSig.value),sub=subdivision(),ticksPerBar=beats*sub,swing=parseFloat(swingSel.value);const isAccent=tickCount%ticksPerBar===0;clickSound(isAccent);pulse.style.opacity='1';setTimeout(()=>pulse.style.opacity='.2',80);let interval=60/bpm/sub;if(swing>0&&sub>=2){interval*=tickCount%2? swing:(2-swing);}tickCount++;timer=setTimeout(schedule,interval*1000);} 
+function restart(){clearTimeout(timer);tickCount=0;schedule();}
+toggleBtn.onclick=()=>{if(!running){ctx.resume();tickCount=0;schedule();toggleBtn.textContent='Stop';}else{clearTimeout(timer);toggleBtn.textContent='Start';}running=!running;};
+</script>
+</body>
+</html>
