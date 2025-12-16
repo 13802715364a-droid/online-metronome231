@@ -30,10 +30,6 @@ button{background:var(--primary);border:none;color:#000;padding:14px 32px;border
 <body>
 <header>
   <h1>Free Online Metronome</h1>
-  <div>
-    <a class="lang" href="/en/online-metronome">EN</a>
-    <a class="lang" href="/zh/节拍器">中文</a>
-  </div>
 </header>
 
 <!-- Ad Slot 1 -->
@@ -97,4 +93,5 @@ function restart(){clearTimeout(timer);tickCount=0;schedule();}
 toggleBtn.onclick=()=>{if(!running){ctx.resume();tickCount=0;schedule();toggleBtn.textContent='Stop';}else{clearTimeout(timer);toggleBtn.textContent='Start';}running=!running;};
 </script>
 </body>
+
 </html>
